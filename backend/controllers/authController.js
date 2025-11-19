@@ -12,17 +12,16 @@ exports.signup = async (req, res) => {
   try {
     const hashed = bcrypt.hash(10, password);
 
-    const result = await pool.query(
-      "SELECT * FROM user_profiles WHERE email = $1",
-      [email]
-    );
+    const result = await pool.query("SELECT * FROM users WHERE email = $1", [
+      email,
+    ]);
 
     if (result.rows.length > 0) {
       return res.status(409).json({ messag: "User already exxist" });
     }
 
     const user = await pool.query(
-      "INSERT INTO user_profiles(name, email, password) VALUES ($1, $2, $3)",
+      "INSERT INTO users(full_name, email, password) VALUES ($1, $2, $3)",
       [name, email, hashed]
     );
 
@@ -41,10 +40,9 @@ exports.login = async (req, res) => {
   }
 
   try {
-    const users = await pool.query(
-      "SELECT * FROM user_profiles WHERE email = $1",
-      [email]
-    );
+    const users = await pool.query("SELECT * FROM users WHERE email = $1", [
+      email,
+    ]);
     if (users.rows.length === 0) {
       return res.status(409).json({ message: "User not found" });
     }
