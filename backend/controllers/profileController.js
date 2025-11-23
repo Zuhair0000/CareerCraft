@@ -21,17 +21,11 @@ exports.setupProfile = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    // Users
-    await pool.query(
-      "UPDATE users SET full_name = $1, email = $2 WHERE id = $3",
-      [fullName, email, userId]
-    );
-
     // User Profile
     await pool.query(
       `INSERT INTO user_profiles
-     (id, phone, address, linkedin, github, portfolio, summary)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     (id, full_name, email, phone, address, linkedin, github, portfolio, summary)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
      ON CONFLICT (id) DO UPDATE SET
      phone = EXCLUDED.phone,
      address = EXCLUDED.address,
@@ -40,7 +34,17 @@ exports.setupProfile = async (req, res) => {
      portfolio = EXCLUDED.portfolio,
      summary = EXCLUDED.summary,
      updated_at = NOW()`,
-      [userId, phone, address, linkedin, github, portfolio, summary]
+      [
+        userId,
+        fullName,
+        email,
+        phone,
+        address,
+        linkedin,
+        github,
+        portfolio,
+        summary,
+      ]
     );
 
     // Skills
@@ -103,6 +107,87 @@ exports.setupProfile = async (req, res) => {
     }
 
     res.status(201).json("Profile set up successfully");
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.getProfileInfo = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const personalInfo = await pool.query(
+      "SELECT (full_name, email, phone, address, linkedin, github, portfolio, summary) FROM user_profile WHERE id = $1",
+      [userId]
+    );
+
+    if (personalInfo.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const skillsResult = await pool.query(
+      "SELECT skill_name FROM skills WHERE user_id = $1",
+      [userId]
+    );
+
+    const experienceResult = await pool.query(
+      "SELECT * FROM experience WHERE user_id = $1",
+      [userId]
+    );
+
+    const educationResult = await pool.query(
+      "SELECT * FROM education WHERE user_id = $1",
+      [userId]
+    );
+
+    const projectsResult = await pool.query(
+      "SELECT * FROM projects WHERE user_id = $1",
+      [userId]
+    );
+
+    const certificatesResult = await pool.query(
+      "SELECT * FROM certificates WHERE user_id = $1",
+      [userId]
+    );
+
+    const data = {
+      userInfo: personalInfo.rows[0],
+      skills: skillsResult.rows,
+      experience: experienceResult.rows,
+      education: educationResult.rows,
+      projects: projectsResult.rows,
+      certificates: certificatesResult.rows,
+    };
+
+    res.status(200).json({ message: "Fetched successfully", data });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.updateProfile = async (req, res) => {
+  const {
+    fullName,
+    email,
+    phone,
+    address,
+    linkedin,
+    github,
+    portfolio,
+    summary,
+    skills,
+    experience,
+    currentlyWorking,
+    achievements,
+    projects,
+    education,
+    certification,
+  } = req.body;
+  const userId = req.user.id;
+
+  try {
   } catch (err) {
     console.log(err);
   }
