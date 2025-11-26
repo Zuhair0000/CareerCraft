@@ -118,3 +118,28 @@ exports.generateResume = async (req, res) => {
     });
   }
 };
+
+exports.getResumes = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const resumeResult = await pool.query(
+      "SELECT * FROM resumes WHERE user_id = $1",
+      [userId]
+    );
+
+    if (resumeResult.rows.length === 0) {
+      return res.status(404).json({ message: "No resumes found" });
+    }
+
+    const resumes = resumeResult.rows;
+
+    res.status(200).json({ message: "Fetched successfully", resumes });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: "Server error",
+      error: err.message,
+    });
+  }
+};
