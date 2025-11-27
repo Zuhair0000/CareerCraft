@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const pool = require("./db");
 const authRoutes = require("./routes/authRoutes");
+const profileRoures = require("./routes/profileRoutes");
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/profile", profileRoures);
 
 const PORT = process.env.PORT | 3001;
 
