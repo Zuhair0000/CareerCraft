@@ -9,3 +9,5 @@ const router = express.Router();
 router.post("/setup", setupProfile);
 router.post("/update", updateProfile);
 router.get("/", getProfileInfo);
+
+module.exports = router;
