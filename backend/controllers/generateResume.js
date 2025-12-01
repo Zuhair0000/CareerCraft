@@ -45,6 +45,8 @@ exports.generateResume = async (req, res) => {
     const education = educationResult.rows;
     const certificates = certificatesResult.rows;
 
+    const skillsList = skills.map((skill) => skill.skill_name).join(", ");
+
     const prompt = `
     You are a professional resume writer and designer.  
     Generate a beautiful, ATS-friendly **HTML résumé** with modern clean styling.  
@@ -63,7 +65,7 @@ exports.generateResume = async (req, res) => {
     ${profile.summary}
 
     Skills:
-    ${skills.join(", ")}
+    ${skillsList}
 
     Experience:
     ${JSON.stringify(experience, null, 2)}

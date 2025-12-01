@@ -111,12 +111,12 @@ exports.generateCoverLetter = async (req, res) => {
 
     // Wrap in HTML for PDF
     const html = `
-<html>
-  <body style="font-family: Arial; white-space: pre-wrap; line-height: 1.6; font-size: 14px; padding: 20px;">
-    ${escaped}
-  </body>
-</html>
-`;
+      <html>
+        <body style="font-family: Arial; white-space: pre-wrap; line-height: 1.6; font-size: 14px; padding: 20px;">
+          ${escaped}
+        </body>
+      </html>
+      `;
 
     const browser = await puppeteer.launch({ headless: "new" });
     const page = await browser.newPage();
@@ -138,5 +138,28 @@ exports.generateCoverLetter = async (req, res) => {
       message: "Server error",
       error: err.message,
     });
+  }
+};
+
+exports.getConverLetters = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const coverLetterResult = await pool.query(
+      "SELECT * FROM cover_letters WHERE user_id = $1",
+      [userId]
+    );
+
+    if (coverLetterResult.rows.length === 0) {
+      return res.status(404).json({ message: "No cover letters found" });
+    }
+
+    const coverLetters = coverLetterResult.rows;
+
+    res
+      .status(200)
+      .json({ message: "Cover letters fetched successfully", coverLetters });
+  } catch (err) {
+    console.log(err);
   }
 };
